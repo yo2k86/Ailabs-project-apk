@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ailabs Admin - Control Panel</title>
+    
+    <!-- Import Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Import Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Import FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        darkbg: '#030712',
+                        panelbg: 'rgba(15, 23, 42, 0.6)',
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 6s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { background-color: #030712; color: #fff; }
+        
+        /* Efek Kaca Transparan & Berkilau dengan Nuansa Biru */
+        .glass-panel {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.75) 0%, rgba(3, 7, 18, 0.95) 100%);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(59, 130, 246, 0.15);
+            border-top: 1px solid rgba(96, 165, 250, 0.3);
+            border-left: 1px solid rgba(59, 130, 246, 0.2);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.8), 0 0 20px rgba(59, 130, 246, 0.05), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .glass-panel::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -150%;
+            width: 50%; height: 100%;
+            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(96, 165, 250, 0.15) 50%, rgba(255,255,255,0) 100%);
+            transform: skewX(-25deg);
+            z-index: 1; pointer-events: none;
+        }
+        .glass-panel:hover::after {
+            animation: shine 1.2s ease-in-out;
+        }
+        @keyframes shine {
+            0% { left: -150%; }
+            100% { left: 150%; }
+        }
+
+        .glass-input {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-top: 1px solid rgba(96, 165, 250, 0.3);
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.6);
+            backdrop-filter: blur(10px);
+            color: #fff;
+            transition: all 0.3s ease;
+        }
+        .glass-input:focus {
+            background: rgba(3, 7, 18, 0.8);
+            border-color: rgba(59, 130, 246, 0.8);
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.6), 0 0 15px rgba(59, 130, 246, 0.4);
+            outline: none;
+        }
+
+        .glass-btn {
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.6) 0%, rgba(29, 78, 216, 0.4) 100%);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(96, 165, 250, 0.3);
+            border-top: 1px solid rgba(147, 197, 253, 0.5);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .glass-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(37, 99, 235, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+            border-top: 1px solid rgba(191, 219, 254, 0.6);
+        }
+
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: rgba(59, 130, 246, 0.4); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(59, 130, 246, 0.8); }
+        
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+
+        .active-tab {
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.8), rgba(29, 78, 216, 0.5)) !important;
+            color: white !important;
+            border-color: rgba(96, 165, 250, 0.4) !important;
+            border-top-color: rgba(147, 197, 253, 0.6) !important;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4), inset 0 1px 1px rgba(255,255,255,0.3);
+        }
+        
+        table td, table th { position: relative; z-index: 2; }
+    </style>
+</head>
+<body class="font-sans antialiased min-h-screen flex flex-col relative overflow-x-hidden">
+
+    <!-- Background Tema Biru Gelap Berkualitas -->
+    <div class="fixed inset-0 z-[-1] pointer-events-none bg-[#030712]">
+        <div class="absolute top-[-10%] left-[-10%] w-[60vw] h-[60vw] rounded-full bg-blue-600/15 blur-[120px] animate-pulse-slow"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[50vw] h-[50vw] rounded-full bg-cyan-500/10 blur-[120px] animate-[pulse_8s_cubic-bezier(0.4,0,0.6,1)_infinite]"></div>
+        <div class="absolute top-[40%] left-[40%] w-[40vw] h-[40vw] rounded-full bg-indigo-500/10 blur-[100px] animate-pulse"></div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed top-2 md:top-5 right-2 md:right-5 w-[calc(100%-16px)] md:w-auto glass-panel px-4 py-3 rounded-xl flex items-center gap-3 opacity-0 pointer-events-none transition-all duration-300 z-[999] border-l-4 border-l-blue-500 transform translate-y-[-20px]">
+        <i id="toast-icon" class="fas fa-info-circle text-blue-400 drop-shadow-[0_0_5px_rgba(59,130,246,0.5)]"></i>
+        <span id="toast-msg" class="text-[11px] md:text-[13px] font-medium tracking-wide">Notifikasi</span>
+    </div>
+
+    <!-- VIEW 1: LOGIN ADMIN -->
+    <div id="login-view" class="fixed inset-0 z-[100] flex flex-col items-center justify-center p-4 transition-opacity duration-500 bg-black/60 backdrop-blur-md">
+        <div class="glass-panel p-6 md:p-10 rounded-3xl w-full max-w-sm md:max-w-md text-center border border-blue-500/20 shadow-[0_0_50px_rgba(37,99,235,0.15)]">
+            <div class="relative inline-block mb-4 md:mb-6">
+                <div class="absolute inset-0 bg-blue-500/40 blur-2xl rounded-full"></div>
+                <img src="https://i.ibb.co.com/4nFbhTSN/Desain-tanpa-judul-20260428-191052-0000.png" alt="Ailabs Logo" class="relative w-24 h-24 md:w-28 md:h-28 object-contain mx-auto drop-shadow-[0_0_15px_rgba(96,165,250,0.4)]">
+            </div>
+            
+            <h1 class="text-xl md:text-3xl font-extrabold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-blue-100 to-blue-400 tracking-tight">Command Center</h1>
+            <p class="text-[10px] md:text-[13px] text-blue-200/60 mb-6 md:mb-8 font-light">Sistem Autentikasi Super Admin</p>
+            
+            <div class="relative mb-5 md:mb-6 group">
+                <i class="fas fa-fingerprint absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500/60 group-focus-within:text-blue-400 transition-colors"></i>
+                <input type="password" id="admin-password" class="glass-input w-full rounded-xl pl-12 pr-4 py-3 md:py-3.5 text-center text-[11px] md:text-[13px] text-white focus:ring-2 focus:ring-blue-500/50" placeholder="Kode Akses Keamanan" onkeypress="if(event.key === 'Enter') loginAdmin()">
+            </div>
+            
+            <button onclick="loginAdmin()" class="glass-btn w-full text-white font-bold py-3 md:py-3.5 rounded-xl uppercase tracking-widest text-[11px] md:text-[13px]">Buka Akses</button>
+        </div>
+    </div>
+
+    <!-- VIEW 2: DASHBOARD ADMIN -->
+    <div id="dashboard-view" class="hidden w-full min-h-screen flex flex-col opacity-0 transition-opacity duration-500 relative z-10">
+        
+        <!-- HEADER (MINI DESKTOP: Tetap sebaris di HP) -->
+        <header class="glass-panel sticky top-2 z-30 px-3 py-3 md:px-6 md:py-4 mx-2 md:mx-6 mt-2 md:mt-4 rounded-2xl flex flex-row justify-between items-center gap-2 border border-blue-500/20 shadow-[0_8px_32px_rgba(0,0,0,0.6)]">
+            <div class="flex items-center gap-2 md:gap-3">
+                <div class="p-1 md:p-2 rounded-lg md:rounded-xl bg-blue-500/10 border border-blue-500/30 shadow-inner">
+                    <img src="https://i.ibb.co.com/4nFbhTSN/Desain-tanpa-judul-20260428-191052-0000.png" alt="Ailabs Logo" class="w-5 h-5 md:w-8 md:h-8 object-contain drop-shadow-[0_0_8px_rgba(96,165,250,0.6)]">
+                </div>
+                <h2 class="font-extrabold text-[11px] md:text-xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-100 to-blue-400">Ailabs Control</h2>
+            </div>
+
+            <div class="flex flex-row gap-1 md:gap-3 items-center">
+                <button id="tab-users" onclick="switchTab('users')" class="px-2 py-1.5 md:px-5 md:py-2.5 rounded-lg md:rounded-xl bg-white/5 text-blue-100 text-[9px] md:text-[13px] font-semibold border border-white/5 hover:bg-white/10 transition-all active-tab shadow-sm flex items-center justify-center whitespace-nowrap">
+                    <i class="fas fa-users mr-1 md:mr-2"></i> <span>Pengguna</span>
+                </button>
+                <button id="tab-referrals" onclick="switchTab('referrals')" class="px-2 py-1.5 md:px-5 md:py-2.5 rounded-lg md:rounded-xl bg-white/5 text-blue-100 text-[9px] md:text-[13px] font-semibold border border-white/5 hover:bg-white/10 transition-all shadow-sm flex items-center justify-center whitespace-nowrap">
+                    <i class="fas fa-ticket-alt mr-1 md:mr-2"></i> <span>Stok VIP</span>
+                </button>
+                <button id="tab-history" onclick="switchTab('history')" class="px-2 py-1.5 md:px-5 md:py-2.5 rounded-lg md:rounded-xl bg-white/5 text-blue-100 text-[9px] md:text-[13px] font-semibold border border-white/5 hover:bg-white/10 transition-all shadow-sm flex items-center justify-center whitespace-nowrap">
+                    <i class="fas fa-history mr-1 md:mr-2"></i> <span>Riwayat</span>
+                </button>
+                <div class="w-px h-5 bg-white/10 mx-1 md:mx-2"></div>
+                <button onclick="logoutAdmin()" class="px-2 py-1.5 md:px-4 md:py-2 rounded-lg md:rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20 text-[9px] md:text-[13px] font-bold transition-all border border-red-500/20 flex items-center shadow-lg">
+                    <i class="fas fa-power-off"></i>
+                </button>
+            </div>
+        </header>
+
+        <main class="flex-1 p-2 md:p-6 max-w-7xl mx-auto w-full">
+            
+            <!-- SECTION 1: MANAJEMEN USER -->
+            <div id="section-users" class="flex flex-col gap-2 md:gap-6">
+                <!-- GRID CARDS (Dipaksa 3 kolom berjejer meskipun di HP untuk efek Mini Desktop) -->
+                <div class="grid grid-cols-3 gap-2 md:gap-6">
+                    <div class="glass-panel p-2 md:p-6 rounded-xl md:rounded-3xl border-l-2 md:border-l-4 border-l-blue-400 flex flex-col md:flex-row items-center md:items-start text-center md:text-left gap-1 md:gap-5">
+                        <div class="w-6 h-6 md:w-14 md:h-14 shrink-0 rounded-md md:rounded-2xl bg-blue-500/20 border border-blue-500/30 flex items-center justify-center text-blue-400 text-[10px] md:text-2xl"><i class="fas fa-users"></i></div>
+                        <div class="w-full truncate"><p class="text-[7px] md:text-[13px] text-blue-200/70 font-medium md:mb-1 truncate">Total User</p><h3 class="text-[11px] md:text-3xl font-extrabold drop-shadow-md text-white" id="stat-total-users">0</h3></div>
+                    </div>
+                    <div class="glass-panel p-2 md:p-6 rounded-xl md:rounded-3xl border-l-2 md:border-l-4 border-l-cyan-400 flex flex-col md:flex-row items-center md:items-start text-center md:text-left gap-1 md:gap-5">
+                        <div class="w-6 h-6 md:w-14 md:h-14 shrink-0 rounded-md md:rounded-2xl bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400 text-[10px] md:text-2xl"><i class="fas fa-wallet"></i></div>
+                        <div class="w-full truncate"><p class="text-[7px] md:text-[13px] text-cyan-200/70 font-medium md:mb-1 truncate">Kredit Klien</p><h3 class="text-[11px] md:text-3xl font-extrabold text-cyan-300 drop-shadow-md" id="stat-total-local-credits">0</h3></div>
+                    </div>
+                    <div class="glass-panel p-2 md:p-6 rounded-xl md:rounded-3xl border-l-2 md:border-l-4 border-l-indigo-400 flex flex-col md:flex-row items-center md:items-start text-center md:text-left gap-1 md:gap-5">
+                        <div class="w-6 h-6 md:w-14 md:h-14 shrink-0 rounded-md md:rounded-2xl bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 text-[10px] md:text-2xl cursor-pointer" onclick="loadKieBalance()"><i class="fas fa-server"></i></div>
+                        <div class="w-full truncate"><p class="text-[7px] md:text-[13px] text-indigo-200/70 font-medium md:mb-1 truncate">Server Kie.ai</p><h3 class="text-[11px] md:text-3xl font-extrabold text-indigo-300 drop-shadow-[0_0_8px_rgba(99,102,241,0.4)]" id="stat-total-credits">...</h3></div>
+                    </div>
+                </div>
+
+                <!-- PERBAIKAN: Struktur flex-1 min-h-0 di dalam glass-panel setinggi 65vh menjamin scroll bisa meluncur mulus -->
+                <div class="glass-panel rounded-xl md:rounded-3xl flex flex-col h-[65vh] md:h-[75vh] border border-blue-500/20">
+                    <div class="p-2 md:p-5 border-b border-white/10 flex flex-row justify-between items-center gap-2 bg-blue-900/10 backdrop-blur-md z-20 rounded-t-xl md:rounded-t-3xl shadow-sm shrink-0">
+                        <h3 class="font-bold text-[10px] md:text-lg tracking-wide truncate flex items-center gap-1"><i class="fas fa-database text-blue-400"></i> <span>Database Klien</span></h3>
+                        <div class="flex flex-row items-center gap-1 md:gap-3">
+                            <button onclick="loadUsers()" class="glass-btn text-[8px] md:text-[13px] px-2 py-1 md:px-4 md:py-2.5 rounded-lg md:rounded-xl flex items-center justify-center shadow-lg font-semibold shrink-0 whitespace-nowrap">
+                                <i class="fas fa-sync-alt mr-1 md:mr-2"></i> <span>Refresh</span>
+                            </button>
+                            <div class="relative">
+                                <i class="fas fa-search absolute left-2 md:left-3 top-1/2 transform -translate-y-1/2 text-blue-300/50 text-[8px] md:text-[13px]"></i>
+                                <input type="text" id="search-user" onkeyup="filterTable('users-tbody', 'search-user')" class="glass-input w-24 md:w-64 rounded-lg md:rounded-xl pl-6 pr-2 py-1 md:pl-9 md:pr-4 md:py-2 text-[9px] md:text-[13px]" placeholder="Cari...">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex-1 min-h-0 overflow-y-auto overflow-x-auto w-full custom-scrollbar relative z-10">
+                        <table class="w-full text-left border-collapse min-w-[550px]">
+                            <thead class="text-[7px] md:text-[11px] uppercase text-blue-200/60 sticky top-0 z-30">
+                                <tr>
+                                    <th class="px-2 py-2 md:px-4 md:py-3 bg-[#080C16]/95 backdrop-blur-xl border-b border-white/10 font-bold tracking-wider w-[40%]">Profil & ID</th>
+                                    <th class="px-1 py-2 md:px-4 md:py-3 bg-[#080C16]/95 backdrop-blur-xl border-b border-white/10 font-bold tracking-wider text-center w-[20%]">Sisa Kredit</th>
+                                    <th class="px-1 py-2 md:px-4 md:py-3 bg-[#080C16]/95 backdrop-blur-xl border-b border-white/10 font-bold tracking-wider text-center w-[15%]">Akses</th>
+                                    <th class="px-2 py-2 md:px-4 md:py-3 bg-[#080C16]/95 backdrop-blur-xl border-b border-white/10 font-bold tracking-wider text-right w-[25%]">Top-up Manual</th>
+                                </tr>
+                            </thead>
+                            <tbody id="users-tbody" class="text-[9px] md:text-[13px] divide-y divide-white/5"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 2: STOK KODE REFERRAL -->
+            <div id="section-referrals" class="hidden flex flex-col gap-2 md:gap-6">
+                <div class="glass-panel p-2 md:p-6 rounded-xl md:rounded-3xl border-l-2 md:border-l-4 border-l-cyan-500 flex flex-row items-center justify-between gap-2 md:gap-4">
+                    <div class="flex items-center gap-2 md:gap-5">
+                        <div class="w-8 h-8 md:w-14 md:h-14 shrink-0 rounded-lg md:rounded-2xl bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400 text-[12px] md:text-2xl shadow-[inset_0_0_10px_rgba(6,182,212,0.2)]"><i class="fas fa-key"></i></div>
+                        <div class="truncate"><p class="text-[8px] md:text-[13px] text-cyan-200/70 font-medium md:mb-1 truncate">Total Stok Kode VIP</p><h3 class="text-[12px] md:text-3xl font-extrabold drop-shadow-md text-white" id="stat-total-refs">300</h3></div>
+                    </div>
+                    <button onclick="loadReferrals()" class="glass-btn shrink-0 text-[8px] md:text-[13px] px-2 py-1 md:px-5 md:py-2.5 rounded-lg md:rounded-xl flex items-center shadow-lg font-bold whitespace-nowrap">
+                        <i class="fas fa-sync-alt mr-1 md:mr-2"></i> <span>Refresh Status</span>
+                    </button>
+                </div>
+
+                <div class="glass-panel rounded-xl md:rounded-3xl flex flex-col h-[65vh] md:h-[75vh] border border-cyan-500/20">
+                    <div class="p-2 md:p-5 border-b border-white/10 flex flex-row justify-between items-center gap-2 bg-cyan-900/10 backdrop-blur-md z-20 rounded-t-xl md:rounded-t-3xl shadow-sm shrink-0">
+                        <h3 class="font-bold text-[10px] md:text-lg tracking-wide truncate flex items-center gap-1"><i class="fas fa-shield-alt text-cyan-400"></i> <span>Monitoring Kode</span></h3>
+                        <div class="relative">
+                            <i class="fas fa-search absolute left-2 md:left-3 top-1/2 transform -translate-y-1/2 text-cyan-300/50 text-[8px] md:text-[13px]"></i>
+                            <input type="text" id="search-ref" onkeyup="filterTable('ref-tbody', 'search-ref')" class="glass-input w-28 md:w-64 rounded-lg md:rounded-xl pl-6 pr-2 py-1 md:pl-9 md:pr-4 md:py-2 text-[9px] md:text-[13px]" placeholder="Cari kode...">
+                        </div>
+                    </div>
+                    
+                    <div class="flex-1 min-h-0 overflow-y-auto overflow-x-auto w-full custom-scrollbar relative">
+                        <table class="w-full text-left border-collapse min-w-[500px]">
+                            <thead class="text-[7px] md:text-[11px] uppercase text-cyan-200/60 sticky top-0 z-30">
+                                <tr>
+                                    <th class="px-2 py-2 md:px-4 md:py-3 bg-[#080C16]/95 backdrop-blur-xl border-b border-white/10 font-bold tracking-wider w-[45%]">Kode Referral (200 ⚡)</th>
+                                    <th class="px-1 py-2 md:px-4 md:py-3 bg-[#080C16]/95 backdrop-blur-xl border-b border-white/10 font-bold tracking-wider text-center w-[30%]">Status & Pemakai</th>
+                                    <th class="px-2 py-2 md:px-4 md:py-3 bg-[#080C16]/95 backdrop-blur-xl border-b border-white/10 font-bold tracking-wider text-right w-[25%]">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ref-tbody" class="text-[9px] md:text-[13px] divide-y divide-white/5"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- SECTION 3: RIWAYAT TASK AI -->
+            <div id="section-history" class="hidden flex flex-col gap-2 md:gap-6">
+                <div class="glass-panel p-2 md:p-6 rounded-xl md:rounded-3xl border-l-2 md:border-l-4 border-l-indigo-500 flex flex-row items-center justify-between gap-2 md:gap-4">
+                    <div class="flex items-center gap-2 md:gap-5">
+                        <div class="w-8 h-8 md:w-14 md:h-14 shrink-0 rounded-lg md:rounded-2xl bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 text-[12px] md:text-2xl shadow-[inset_0_0_10px_rgba(99,102,241,0.2)]"><i class="fas fa-photo-video"></i></div>
+                        <div class="truncate"><p class="text-[8px] md:text-[13px] text-indigo-200/70 font-medium md:mb-1 truncate">Riwayat Server</p><h3 class="text-[11px] md:text-xl font-extrabold drop-shadow-md text-white truncate">Pantau & Unduh Hasil</h3></div>
+                    </div>
+                    <button onclick="loadHistory()" class="glass-btn shrink-0 text-[8px] md:text-[13px] px-2 py-1 md:px-5 md:py-2.5 rounded-lg md:rounded-xl flex items-center shadow-lg font-bold whitespace-nowrap">
+                        <i class="fas fa-sync-alt mr-1 md:mr-2"></i> <span>Refresh Riwayat</span>
+                    </button>
+                </div>
+
+                <div class="glass-panel rounded-xl md:rounded-3xl flex flex-col h-[65vh] md:h-[75vh] border border-indigo-500/20">
+                    <div class="p-2 md:p-5 border-b border-white/10 flex flex-row justify-between items-center gap-2 bg-indigo-900/10 backdrop-blur-md z-20 rounded-t-xl md:rounded-t-3xl shadow-sm shrink-0">
+                        <h3 class="font-bold text-[10px] md:text-lg tracking-wide truncate flex items-center gap-1"><i class="fas fa-list-alt text-indigo-400"></i> <span>Log Aktivitas User</span></h3>
+                        <div class="relative">
+                            <i class="fas fa-search absolute left-2 md:left-3 top-1/2 transform -translate-y-1/2 text-indigo-300/50 text-[8px] md:text-[13px]"></i>
+                            <input type="text" id="search-history" onkeyup="filterTable('history-tbody', 'search-history')" class="glass-input w-28 md:w-64 rounded-lg md:rounded-xl pl-6 pr-2 py-1 md:pl-9 md:pr-4 md:py-2 text-[9px] md:text-[13px]" placeholder="Cari data...">
+                        </div>
+                    </div>
+                    
+                    <div class="flex-1 min-h-0 overflow-y-auto overflow-x-auto w-full custom-scrollbar relative">
+                        <table class="w-full text-left border-collapse min-w-[650px]">
+                            <thead class="text-[7px] md:text-[11px] uppercase text-indigo-200/60 sticky top-0 z-30">
+                                <tr>
+                                    <th class="px-2 py-2 md:px-4 md:py-3 bg-[#080C16]/95 backdrop-blur-xl border-b border-white/10 font-bold tracking-wider w-[30%]">Info Klien</th>
+                                    <th class="px-1 py-2 md:px-4 md:py-3 bg-[#080C16]/95 backdrop-blur-xl border-b border-white/10 font-bold tracking-wider w-[35%]">Detail Prompt</th>
+                                    <th class="px-1 py-2 md:px-4 md:py-3 bg-[#080C16]/95 backdrop-blur-xl border-b border-white/10 font-bold tracking-wider text-center w-[15%]">Waktu</th>
+                                    <th class="px-2 py-2 md:px-4 md:py-3 bg-[#080C16]/95 backdrop-blur-xl border-b border-white/10 font-bold tracking-wider text-right w-[20%]">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-tbody" class="text-[9px] md:text-[13px] divide-y divide-white/5"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+        </main>
+    </div>
+
+    <script>
+        let currentAdminSessionCode = '';
+        const appId = typeof __app_id !== 'undefined' ? __app_id : '1:290208256362:web:b5022be8bd57311f9cd513';
+
+        // Fungsi Animasi Loading Khusus dengan Custom Logo
+        function getLoadingHTML(colSpan) {
+            return `
+            <tr>
+                <td colspan="${colSpan}" class="py-16 md:py-24">
+                    <div class="flex flex-col items-center justify-center">
+                        <div class="relative w-12 h-12 md:w-20 md:h-20 flex items-center justify-center mb-4 md:mb-5">
+                            <div class="absolute inset-0 rounded-full border-[3px] border-transparent border-t-blue-500 border-b-cyan-400 animate-spin"></div>
+                            <div class="absolute inset-1 rounded-full border-[3px] border-transparent border-l-blue-400 border-r-cyan-300 animate-[spin_1.5s_linear_infinite_reverse]"></div>
+                            <img src="https://i.ibb.co.com/4nFbhTSN/Desain-tanpa-judul-20260428-191052-0000.png" class="w-6 h-6 md:w-10 md:h-10 object-contain animate-pulse drop-shadow-[0_0_10px_rgba(96,165,250,0.5)]">
+                        </div>
+                        <span class="text-blue-400 font-semibold text-[9px] md:text-[13px] tracking-[0.15em] md:tracking-widest uppercase drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]">Server Ailabs Sedang Merender...</span>
+                    </div>
+                </td>
+            </tr>`;
+        }
+
+        function showToast(msg, type = 'success') {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toast-icon');
+            document.getElementById('toast-msg').innerText = msg;
+            toast.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-[-20px]');
+            
+            toast.className = `fixed top-2 md:top-5 right-2 md:right-5 w-[calc(100%-16px)] md:w-auto glass-panel px-4 md:px-6 py-3 md:py-4 rounded-xl flex items-center gap-3 md:gap-4 transition-all duration-300 z-[999] border-l-4 ${type === 'success' ? 'border-l-blue-500' : 'border-l-red-500'}`;
+            icon.className = `fas ${type === 'success' ? 'fa-check-circle text-blue-400 text-lg md:text-xl drop-shadow-[0_0_5px_rgba(59,130,246,0.5)]' : 'fa-exclamation-circle text-red-400 text-lg md:text-xl drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]'}`;
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'pointer-events-none', 'translate-y-[-20px]');
+            }, 3000);
+        }
+
+        function loginAdmin() {
+            const code = document.getElementById('admin-password').value;
+            if (code === 'admin123' || code === 'Kr333wol') {
+                currentAdminSessionCode = code;
+                document.getElementById('login-view').classList.add('hidden');
+                document.getElementById('dashboard-view').classList.remove('hidden');
+                void document.getElementById('dashboard-view').offsetWidth;
+                document.getElementById('dashboard-view').style.opacity = '1';
+                loadUsers();
+            } else { showToast('Kode Akses Ditolak!', 'error'); }
+        }
+
+        function logoutAdmin() { location.reload(); }
+
+        function switchTab(tab) {
+            document.getElementById('section-users').classList.toggle('hidden', tab !== 'users');
+            document.getElementById('section-referrals').classList.toggle('hidden', tab !== 'referrals');
+            document.getElementById('section-history').classList.toggle('hidden', tab !== 'history');
+            
+            document.getElementById('tab-users').classList.toggle('active-tab', tab === 'users');
+            document.getElementById('tab-referrals').classList.toggle('active-tab', tab === 'referrals');
+            document.getElementById('tab-history').classList.toggle('active-tab', tab === 'history');
+            
+            if(tab === 'referrals') loadReferrals();
+            if(tab === 'users') loadUsers();
+            if(tab === 'history') loadHistory();
+        }
+
+        async function loadKieBalance() {
+            const el = document.getElementById('stat-total-credits');
+            el.innerHTML = '<i class="fas fa-circle-notch fa-spin text-[10px] md:text-sm text-indigo-300"></i>';
+            try {
+                const res = await fetch('/api/kie-balance', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ adminCode: currentAdminSessionCode })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    el.innerText = Number(data.balance).toLocaleString('id-ID') + ' ⚡';
+                } else {
+                    el.innerText = 'Error';
+                }
+            } catch(e) {
+                el.innerText = 'Offline';
+            }
+        }
+
+        async function loadUsers() {
+            const tbody = document.getElementById('users-tbody');
+            tbody.innerHTML = getLoadingHTML(4);
+            try {
+                loadKieBalance();
+                const res = await fetch('/api/get_users', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ adminCode: currentAdminSessionCode, appId: appId })
+                });
+                const data = await res.json();
+                if(data.success) {
+                    document.getElementById('stat-total-users').innerText = data.users.length;
+                    const totalKreditLokal = data.users.reduce((sum, user) => sum + (user.credits || 0), 0);
+                    document.getElementById('stat-total-local-credits').innerText = totalKreditLokal.toLocaleString('id-ID');
+                    
+                    if (data.users.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="4" class="p-6 md:p-10 text-center text-blue-200/50 italic text-[11px] md:text-[13px]">Belum ada data klien.</td></tr>';
+                        return;
+                    }
+
+                    tbody.innerHTML = data.users.map(u => {
+                        const isVideoOn = u.videoAccess !== false;
+                        return `
+                        <tr class="hover:bg-blue-900/10 border-b border-blue-500/10 transition-colors group">
+                            <td class="px-2 py-2 md:px-4 md:py-4 align-middle overflow-hidden">
+                                <div class="flex flex-col w-full">
+                                    <span class="font-bold text-white text-[9px] md:text-[13px] flex items-center gap-1 drop-shadow-md truncate">
+                                        ${u.name} ${u.isAnon ? '<span class="px-1 py-0.5 rounded bg-blue-900/40 text-[6px] md:text-[9px] text-blue-300 border border-blue-500/30">ANONIM</span>' : ''}
+                                    </span>
+                                    <span class="text-[7px] md:text-[11px] text-blue-300/80 font-mono mt-0.5 truncate">${u.email}</span>
+                                    <span class="text-[6px] md:text-[10px] text-blue-200/40 font-mono mt-0.5 truncate">UID: ${u.uid}</span>
+                                </div>
+                            </td>
+                            <td class="px-1 py-2 md:px-4 md:py-4 text-center align-middle overflow-hidden">
+                                <span class="font-black text-cyan-300 text-[9px] md:text-[13px] drop-shadow-[0_0_5px_rgba(6,182,212,0.4)] whitespace-nowrap">${Number(u.credits || 0).toLocaleString('id-ID')} ⚡</span>
+                            </td>
+                            <td class="px-1 py-2 md:px-4 md:py-4 text-center align-middle">
+                                <button id="btn-toggle-${u.uid}" onclick="toggleVideoAccess('${u.uid}', ${isVideoOn})" class="px-1 py-1 md:px-3 md:py-1.5 rounded md:rounded-lg text-[7px] md:text-[11px] font-bold uppercase tracking-wider transition-all shadow-md w-full max-w-[45px] md:max-w-[80px] flex justify-center items-center gap-1 mx-auto ${isVideoOn ? 'bg-blue-500/20 text-blue-300 border border-blue-500/40 hover:bg-blue-500/30' : 'bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20'}">
+                                    <i class="fas ${isVideoOn ? 'fa-video' : 'fa-video-slash'}"></i>
+                                    <span class="hidden md:inline">${isVideoOn ? 'ON' : 'OFF'}</span>
+                                </button>
+                            </td>
+                            <td class="px-2 py-2 md:px-4 md:py-4 text-center align-middle">
+                                <div class="flex justify-end md:justify-center items-center gap-1 md:gap-2">
+                                    <input type="number" id="in-${u.uid}" class="bg-black/50 border border-blue-500/30 w-7 md:w-14 rounded px-0 py-1 md:py-1.5 text-center text-[8px] md:text-[13px] font-mono text-blue-100 focus:outline-none focus:border-blue-400 focus:bg-blue-900/30 transition-colors" placeholder="0">
+                                    <button onclick="changeCredit('${u.uid}','add')" class="w-5 h-5 md:w-8 md:h-8 bg-blue-600/30 hover:bg-blue-500/60 text-blue-300 border border-blue-500/50 rounded flex items-center justify-center transition-all shrink-0"><i class="fas fa-plus text-[7px] md:text-[12px]"></i></button>
+                                    <button onclick="changeCredit('${u.uid}','sub')" class="w-5 h-5 md:w-8 md:h-8 bg-red-500/20 hover:bg-red-500/40 text-red-400 border border-red-500/30 rounded flex items-center justify-center transition-all shrink-0"><i class="fas fa-minus text-[7px] md:text-[12px]"></i></button>
+                                </div>
+                            </td>
+                        </tr>`}).join('');
+                }
+            } catch(e) { tbody.innerHTML = '<tr><td colspan="4" class="p-6 md:p-10 text-center text-red-400 text-[11px] md:text-[13px]">Koneksi Terputus.</td></tr>'; }
+        }
+
+        async function toggleVideoAccess(uid, currentStatus) {
+            const newStatus = !currentStatus;
+            try {
+                const res = await fetch('/api/toggle_access', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ adminCode: currentAdminSessionCode, appId: appId, targetUid: uid, videoAccess: newStatus })
+                });
+                if((await res.json()).success) { showToast(`Akses diubah!`); loadUsers(); }
+            } catch(e) { showToast('Gagal mengubah!', 'error'); }
+        }
+
+        async function changeCredit(uid, action) {
+            const el = document.getElementById(`in-${uid}`);
+            const val = parseInt(el.value);
+            if(!val || val <= 0) return showToast('Nominal tidak valid!', 'error');
+            const amount = action === 'add' ? val : -val;
+            try {
+                const res = await fetch('/api/topup', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ adminCode: currentAdminSessionCode, appId: appId, targetUid: uid, amount: amount })
+                });
+                if((await res.json()).success) { showToast('Saldo berhasil diupdate!'); el.value = ''; loadUsers(); }
+            } catch(e) { showToast('Gagal update!', 'error'); }
+        }
+
+        async function loadReferrals() {
+            const tbody = document.getElementById('ref-tbody');
+            tbody.innerHTML = getLoadingHTML(3);
+            try {
+                const res = await fetch('/api/get_referrals', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ adminCode: currentAdminSessionCode, appId: appId })
+                });
+                const data = await res.json();
+                if(data.success) {
+                    tbody.innerHTML = data.codes.map(c => `
+                        <tr class="hover:bg-blue-900/10 border-b border-blue-500/10 transition-colors group">
+                            <!-- whitespace-nowrap DITAMBAHKAN agar teks tidak terpotong ke bawah -->
+                            <td class="px-2 py-2 md:px-4 md:py-5 font-mono font-bold tracking-widest align-middle whitespace-nowrap ${c.used ? 'text-blue-200/30 line-through' : 'text-cyan-300 text-[10px] md:text-[15px] drop-shadow-[0_0_5px_rgba(6,182,212,0.5)]'}">${c.code}</td>
+                            <td class="px-1 py-2 md:px-4 md:py-5 text-center align-middle overflow-hidden">
+                                ${c.used ? '<span class="px-2 md:px-4 py-1 md:py-1.5 rounded bg-red-500/10 text-red-400 text-[6px] md:text-[10px] font-bold uppercase border border-red-500/20">Terpakai</span>' : '<span class="px-2 md:px-4 py-1 md:py-1.5 rounded bg-blue-500/20 text-blue-300 text-[6px] md:text-[10px] font-bold uppercase border border-blue-500/40 shadow-[inset_0_0_8px_rgba(59,130,246,0.3)]">Tersedia</span>'}
+                                <div class="text-[6px] md:text-[11px] text-blue-200/50 mt-1 md:mt-2 truncate mx-auto">${c.used ? `User: ${c.usedBy || '?'}` : ''}</div>
+                            </td>
+                            <td class="px-2 py-2 md:px-4 md:py-5 text-right align-middle">
+                                ${!c.used ? `<button onclick="copyToClipboard('${c.code}')" class="glass-btn text-white px-2 md:px-5 py-1.5 md:py-2.5 rounded md:rounded-xl text-[7px] md:text-[12px] ml-auto font-bold flex items-center gap-1 md:gap-2 w-fit"><i class="fas fa-copy"></i> <span class="hidden md:inline">Salin</span></button>` : `<span class="inline-block px-2 md:px-4 py-1 md:py-2 bg-red-500/5 text-red-500/30 rounded md:rounded-xl text-[7px] md:text-[11px] font-bold uppercase ml-auto border border-red-500/10">Hangus</span>`}
+                            </td>
+                        </tr>`).join('');
+                }
+            } catch(e) { tbody.innerHTML = '<tr><td colspan="3" class="p-6 md:p-10 text-center text-red-400 text-[11px] md:text-[13px]">Koneksi Terputus.</td></tr>'; }
+        }
+
+        async function loadHistory() {
+            const tbody = document.getElementById('history-tbody');
+            tbody.innerHTML = getLoadingHTML(4);
+            try {
+                const res = await fetch('/api/history', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ adminCode: currentAdminSessionCode, appId: appId })
+                });
+                const data = await res.json();
+                if(data.success) {
+                    if (data.history.length === 0) { tbody.innerHTML = '<tr><td colspan="4" class="p-6 md:p-10 text-center text-blue-200/50 italic text-[11px] md:text-[13px]">Tidak ada aktivitas.</td></tr>'; return; }
+                    tbody.innerHTML = data.history.map(h => {
+                        const dateObj = new Date(h.timestamp);
+                        return `
+                        <tr class="hover:bg-blue-900/10 border-b border-blue-500/10 transition-colors group">
+                            <td class="px-2 py-2 md:px-4 md:py-5 overflow-hidden align-middle">
+                                <div class="font-bold text-blue-50 text-[9px] md:text-[13px] truncate">${h.userName}</div>
+                                <div class="text-[7px] md:text-[11px] text-cyan-400/80 font-mono truncate mt-0.5">${h.userEmail}</div>
+                                <div class="text-[6px] md:text-[10px] text-blue-300/40 mt-0.5 md:mt-1 cursor-pointer hover:text-blue-300 truncate transition-colors" onclick="copyToClipboard('${h.taskId}')">ID: ${h.taskId.substring(0,10)}...</div>
+                            </td>
+                            <td class="px-1 py-2 md:px-4 md:py-5 overflow-hidden align-middle">
+                                <div class="flex flex-wrap items-center gap-1 md:gap-2 mb-1 md:mb-1.5">
+                                    <span class="px-1.5 md:px-2.5 py-0.5 md:py-1 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-[6px] md:text-[10px] font-bold uppercase truncate max-w-[45%] shadow-inner">${h.type}</span>
+                                    <span class="px-1.5 md:px-2.5 py-0.5 md:py-1 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30 text-[6px] md:text-[10px] font-bold uppercase truncate max-w-[45%] shadow-inner">${h.engine}</span>
+                                </div>
+                                <p class="text-[8px] md:text-[13px] text-blue-100/70 line-clamp-2 md:line-clamp-3 w-full whitespace-normal break-all">${h.prompt}</p>
+                            </td>
+                            <td class="px-1 py-2 md:px-4 md:py-5 text-center text-blue-200/60 overflow-hidden align-middle">
+                                <div class="font-bold text-white text-[8px] md:text-[13px] truncate">${dateObj.toLocaleTimeString('id-ID', {hour:'2-digit',minute:'2-digit'})}</div>
+                                <div class="text-[7px] md:text-[11px] truncate mt-0.5">${dateObj.toLocaleDateString('id-ID', {day:'numeric',month:'short'})}</div>
+                            </td>
+                            <td class="px-2 py-2 md:px-4 md:py-5 text-right align-middle">
+                                <button id="btn-cek-${h.taskId}" onclick="cekHasilKie('${h.taskId}', '${h.engine}')" class="glass-btn text-white px-2 py-1.5 md:px-5 md:py-2.5 rounded md:rounded-xl text-[7px] md:text-[12px] ml-auto font-bold flex items-center justify-center gap-1 md:gap-2 w-full max-w-[50px] md:max-w-[100px] shadow-[0_0_10px_rgba(37,99,235,0.4)]">
+                                    <i class="fas fa-search"></i> <span class="hidden md:inline">Cek File</span>
+                                </button>
+                            </td>
+                        </tr>`}).join('');
+                }
+            } catch(e) { tbody.innerHTML = '<tr><td colspan="4" class="p-6 md:p-10 text-center text-red-400 text-[11px] md:text-[13px]">Koneksi Terputus.</td></tr>'; }
+        }
+
+        // ========================================================
+        // LOGIKA PENGECEKAN STATUS & UNDUH FILE (TIDAK DIUBAH)
+        // ========================================================
+        async function cekHasilKie(taskId, engine) {
+            const btn = document.getElementById(`btn-cek-${taskId}`);
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
+            btn.disabled = true;
+            try {
+                const res = await fetch(`/api/check?taskId=${taskId}&engine=${encodeURIComponent(engine)}&appId=${appId}`);
+                const data = await res.json();
+                
+                const status = String(data.data?.successFlag ?? data.successFlag ?? data.data?.status ?? data.status ?? '').toUpperCase();
+                
+                if (status === 'FAIL' || status === 'ERROR' || status === '2' || status === '3' || status === 'FAILED') {
+                    btn.innerHTML = '<i class="fas fa-times text-red-400"></i>';
+                    btn.className = 'px-2 py-1.5 md:px-5 md:py-2.5 rounded md:rounded-xl text-[7px] md:text-[12px] ml-auto font-bold flex items-center justify-center gap-1 w-full max-w-[50px] md:max-w-[100px] bg-red-900/30 border border-red-500/40 text-red-300 shadow-inner';
+                    showToast('Gagal di server Kie.ai', 'error');
+                    return;
+                }
+
+                let mediaUrl = data.data?.resultUrl || 
+                               (data.data?.resultUrls && data.data.resultUrls[0]) || 
+                               (data.data?.response?.resultUrls && data.data.response.resultUrls[0]) || 
+                               data.data?.response?.video_url || 
+                               data.data?.video_url;
+
+                if (!mediaUrl) {
+                    let foundUrls = [];
+                    JSON.stringify(data, (k, v) => { if(typeof v === 'string' && v.startsWith('http')) foundUrls.push(v); return v; });
+                    const validUrls = foundUrls.filter(u => !u.includes('localhost') && !u.includes('w3.org'));
+                    mediaUrl = validUrls.find(u => u.includes('tempfile')) || validUrls.find(u => u.match(/\.(mp4|webm|mov|png|jpg|jpeg)(\?.*)?$/i)) || validUrls[0];
+                }
+
+                if (mediaUrl && (status === '1' || status === '100' || status === 'SUCCESS' || status === 'COMPLETED' || mediaUrl.includes('tempfile'))) {
+                    let finalUrl = mediaUrl;
+                    
+                    if (mediaUrl.includes('tempfile')) {
+                        try {
+                            const dlRes = await fetch('/api/download', { 
+                                method: 'POST', 
+                                headers: { 'Content-Type': 'application/json' }, 
+                                body: JSON.stringify({ url: mediaUrl }) 
+                            });
+                            const dlData = await dlRes.json();
+                            finalUrl = dlData.data || dlData.url || mediaUrl;
+                        } catch(e) { 
+                            console.warn("Gagal konversi tempfile di admin");
+                        }
+                    }
+
+                    // Tombol berubah jadi warna Cyan menyala saat file siap
+                    btn.innerHTML = '<i class="fa-solid fa-cloud-download-alt"></i> <span class="hidden md:inline">Unduh</span>';
+                    btn.className = 'bg-gradient-to-r from-cyan-600 to-blue-500 text-white px-2 py-1.5 md:px-5 md:py-2.5 rounded md:rounded-xl text-[8px] md:text-[12px] ml-auto font-bold flex items-center justify-center gap-1 md:gap-2 w-full max-w-[50px] md:max-w-[100px] shadow-[0_0_15px_rgba(6,182,212,0.6)] border border-cyan-400/50 hover:scale-105 transition-transform';
+                    btn.onclick = () => window.downloadAdminFile(finalUrl, btn);
+                    btn.disabled = false;
+                    showToast('File siap diunduh!');
+                } else {
+                    btn.innerHTML = originalHtml;
+                    btn.disabled = false;
+                    showToast('Masih proses / Antri.', 'error');
+                }
+            } catch (e) {
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+                showToast('Gagal terhubung API.', 'error');
+            }
+        }
+
+        window.downloadAdminFile = async function(url, btnElement) {
+            const originalHtml = btnElement.innerHTML;
+            btnElement.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
+            btnElement.disabled = true;
+
+            try {
+                const isVideo = url.match(/\.(mp4|webm|mov)$/i) || url.includes('video');
+                const ext = isVideo ? 'mp4' : 'png';
+
+                const response = await fetch(url);
+                if (!response.ok) throw new Error("CORS terblokir");
+                
+                const blob = await response.blob(); 
+                const blobUrl = window.URL.createObjectURL(blob);
+                
+                const a = document.createElement('a'); 
+                a.style.display = 'none'; 
+                a.href = blobUrl; 
+                a.download = `Ailabs_User_History_${Date.now()}.${ext}`;
+                document.body.appendChild(a); 
+                a.click(); 
+                window.URL.revokeObjectURL(blobUrl);
+
+                showToast("File berhasil diunduh!");
+            } catch (error) {
+                window.open(url, '_blank');
+                showToast("Membuka di tab baru (CORS)");
+            } finally {
+                btnElement.innerHTML = '<i class="fa-solid fa-cloud-download-alt"></i> <span class="hidden md:inline">Unduh</span>';
+                btnElement.disabled = false;
+            }
+        };
+
+        function copyToClipboard(text) {
+            const el = document.createElement('textarea');
+            el.value = text;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            showToast('Teks disalin ke clipboard!');
+        }
+
+        function filterTable(tbodyId, inputId) {
+            const filter = document.getElementById(inputId).value.toLowerCase();
+            const rows = document.getElementById(tbodyId).getElementsByTagName('tr');
+            for (let row of rows) {
+                const txt = row.innerText.toLowerCase();
+                row.style.display = txt.includes(filter) ? '' : 'none';
+            }
+        }
+    </script>
+</body>
+</html>
