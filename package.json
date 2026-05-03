@@ -1,0 +1,8 @@
+{
+  "name": "ailabs",
+  "version": "1.0.0",
+  "description": "Ailabs Backend API",
+  "dependencies": {
+    "firebase-admin": "^12.1.0"
+  }
+}
